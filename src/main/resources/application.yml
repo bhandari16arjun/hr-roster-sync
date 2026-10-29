@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: hr-roster-sync
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/rostersync}
+    username: ${DB_USER:rostersync}
+    password: ${DB_PASSWORD:rostersync}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        rostersync.apply.latency: true
+        http.server.requests: true
+
+logging:
+  structured:
+    format:
+      console: ${LOG_FORMAT:logstash}   # JSON logs; set LOG_FORMAT= (empty) for plain text
+  level:
+    root: INFO
+    com.moveinsync.rostersync: INFO
+
+app:
+  reconciliation:
+    work-dir: ${RECON_WORK_DIR:./data/reconciliation}
+    # Safety brake: stop if this fraction (or more) of ACTIVE employees is missing from the export.
+    max-missing-ratio: ${RECON_MAX_MISSING_RATIO:0.30}
+    # Safety brake: stop if this fraction (or more) of rows in the file is invalid.
+    max-invalid-ratio: ${RECON_MAX_INVALID_RATIO:0.10}
+    chunk-size: 500
+    max-stored-errors: 1000
+  outbox:
+    relay-enabled: ${OUTBOX_RELAY_ENABLED:true}
+    poll-interval-ms: ${OUTBOX_POLL_MS:200}
+    batch-size: 200
+    max-attempts: 8
+    base-backoff-ms: 500
+  cache:
+    office-ttl: PT5M
+  fault:
+    # Enables POST /api/v1/ops/faults (crash injection for the demo). Never enable in production.
+    enabled: ${FAULT_INJECTION_ENABLED:false}
+  security:
+    # Demo users. Passwords are BCrypt-hashed at startup; override them with env vars.
+    users:
+      - { username: acme-hr,          password: "${ACME_HR_PASSWORD:acme-hr-pass}",          role: HR_SYSTEM,       tenant: acme }
+      - { username: acme-transport,   password: "${ACME_TRANSPORT_PASSWORD:acme-transport-pass}", role: TRANSPORT_ADMIN, tenant: acme }
+      - { username: acme-ops,         password: "${ACME_OPS_PASSWORD:acme-ops-pass}",        role: OPERATOR,        tenant: acme }
+      - { username: acme-e1001,       password: "${ACME_E1001_PASSWORD:acme-e1001-pass}",    role: EMPLOYEE,        tenant: acme, employee-id: E1001 }
+      - { username: globex-hr,        password: "${GLOBEX_HR_PASSWORD:globex-hr-pass}",      role: HR_SYSTEM,       tenant: globex }
+      - { username: globex-transport, password: "${GLOBEX_TRANSPORT_PASSWORD:globex-transport-pass}", role: TRANSPORT_ADMIN, tenant: globex }
+      - { username: globex-ops,       password: "${GLOBEX_OPS_PASSWORD:globex-ops-pass}",    role: OPERATOR,        tenant: globex }
