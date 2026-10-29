@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Walks through the main flows with curl. Start the app first (docker compose up --build), then:
-#   ./scripts/demo.sh
+#   ./scripts/demo.sh            (or PAUSE=1 ./scripts/demo.sh to stop before each step)
 # Needs: curl, and jq for pretty output (optional).
 set -euo pipefail
 
@@ -12,7 +12,12 @@ GLOBEX="globex-transport:globex-transport-pass"
 JQ=$(command -v jq || echo cat)
 TMP=$(mktemp -d)
 
-step() { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
+# PAUSE=1 waits for Enter before each step (handy while recording a demo)
+PAUSE=${PAUSE:-0}
+step() {
+  printf '\n\033[1;36m== %s\033[0m\n' "$*"
+  if [ "$PAUSE" = "1" ]; then read -r -p "   [press Enter to run] " _; fi
+}
 post() { curl -s -u "$1" -H 'Content-Type: application/json' -X POST "$BASE$2" -d "$3" | $JQ; }
 get()  { curl -s -u "$1" "$BASE$2" | $JQ; }
 

@@ -13,7 +13,11 @@ OPS="acme-ops:acme-ops-pass"
 ID="C$RANDOM"
 TRIP=$(date -d '+3 days' +%F 2>/dev/null || date -v+3d +%F)
 
-step() { printf '\n\033[1;36m== %s\033[0m\n' "$*"; }
+PAUSE=${PAUSE:-0}
+step() {
+  printf '\n\033[1;36m== %s\033[0m\n' "$*"
+  if [ "$PAUSE" = "1" ]; then read -r -p "   [press Enter to run] " _; fi
+}
 
 step "Create employee $ID and a future booking"
 curl -s -u "$HR" -H 'Content-Type: application/json' -X POST "$BASE/api/v1/hr/events" -d "{\"events\":[
