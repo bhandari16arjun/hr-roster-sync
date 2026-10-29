@@ -1,0 +1,41 @@
+# One command:  docker compose up --build
+# App on http://localhost:8080 , PostgreSQL on localhost:5432
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rostersync
+      POSTGRES_USER: rostersync
+      POSTGRES_PASSWORD: rostersync
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rostersync -d rostersync"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/rostersync
+      DB_USER: rostersync
+      DB_PASSWORD: rostersync
+      RECON_WORK_DIR: /data/reconciliation
+      # demo only: enables POST /api/v1/ops/faults to crash the JVM on purpose
+      FAULT_INJECTION_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - recon:/data/reconciliation
+    # after an injected crash (or any crash) the app comes straight back and the outbox recovers
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  recon:
