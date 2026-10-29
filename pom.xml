@@ -124,6 +124,18 @@
                 <excludedTestGroups></excludedTestGroups>
                 <includedTestGroups>benchmark</includedTestGroups>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- a small heap on purpose: proves the 200k diff runs in bounded memory -->
+                            <argLine>-Xmx384m</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

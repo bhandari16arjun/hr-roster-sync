@@ -7,6 +7,9 @@ spring:
     password: ${DB_PASSWORD:rostersync}
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:20}
+      data-source-properties:
+        # turn JDBC batch inserts into multi-row INSERTs (10x faster bulk loads)
+        reWriteBatchedInserts: true
   flyway:
     enabled: true
   servlet:
