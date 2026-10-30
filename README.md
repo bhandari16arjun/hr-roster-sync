@@ -4,7 +4,7 @@
 
 Java 21 · Spring Boot 3.4 · PostgreSQL 16 · Docker Compose
 
-> 🎥 **Demo video:** _add your link here_
+> 🎥 **Demo video:** https://drive.google.com/file/d/1I_tcmxE2CfKIwo9UFou47TjMqiEHqfy7/view?usp=sharing
 > 📐 **Design note** (architecture, sequence diagram, failure-mode table): [docs/DESIGN.md](docs/DESIGN.md)
 
 ---
